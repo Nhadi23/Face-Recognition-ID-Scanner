@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import Sidebar from './components/sidebar';
+import Sidebar from './components/Sidebar';
 import StudentDashboard from './components/StudentDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import type { Application, EventItem } from './types/types';
 
-export default function App() {
+export default function App() { 
   const [view, setView] = useState<'student' | 'admin'>('student');
 
   const [applications, setApplications] = useState<Application[]>([
