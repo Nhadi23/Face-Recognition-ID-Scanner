@@ -42,10 +42,10 @@ const GateService = {
             .first();
 
         if (!lastLog || lastLog.type === 'IN') {
-            return 'keluar';
+            return 'OUT';
         }
 
-        return 'masuk';
+        return 'IN';
     }
 }
 

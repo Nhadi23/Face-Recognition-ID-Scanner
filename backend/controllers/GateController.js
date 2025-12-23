@@ -5,9 +5,9 @@ const knex = require('../config/database');
 
 router.post('/screen', async (req, res) => {
     try {
-        const { embedding, type } = req.body;
+        const { embedding } = req.body;
 
-        if (!embedding || !type) {
+        if (!embedding) {
             return res.status(400).json({ message: 'Data scan tidak lengkap' });
         }
 
