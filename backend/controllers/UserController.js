@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const UserService = require('../services/UserService');
+const { authorizeRole, authMiddleware } = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
+const knex = require('../config/database');
 
 router.post('/login', async (req, res) => {
   const { nim, password } = req.body;
@@ -125,7 +128,7 @@ router.post('/logout', authMiddleware, async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const users = await UserService.getAll();
     return res.status(200).json(users);
