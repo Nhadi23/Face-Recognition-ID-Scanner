@@ -1,6 +1,8 @@
 import type { Application, EventItem } from '../types/types';
 import { useState } from 'react';
 import EventList from './EventList';
+import { useNavigate } from 'react-router-dom';
+
 
 interface Props {
   applications: Application[];
@@ -10,6 +12,8 @@ interface Props {
 }
 
 export default function AdminDashboard({ applications, approve, events, setEvents }: Props) {
+
+  const navigate = useNavigate();
   const waiting = applications.filter((a) => a.status === 'waiting');
 
   const [eventForm, setEventForm] = useState({ name: '', details: '' });
@@ -23,8 +27,17 @@ export default function AdminDashboard({ applications, approve, events, setEvent
     alert("Event published!");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  }; 
   return (
     <div className="content-area active">
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+        <button onClick={handleLogout} className="logout-btn">
+          Logout
+        </button>
+      </div>
       <section className="card">
         <h2>📥 Pending Applications</h2>
 
