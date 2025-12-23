@@ -17,56 +17,38 @@ router.post('/screen', async (req, res) => {
             return res.status(404).json({ message: 'Wajah ga nemu' });
         }
 
+        const autoType = await GateService.determineNextType(user.id)
         const activePermission = await GateService.checkActivePermission(user.id);
-        const isLate = (currentTime, endTime) => {
-            return new Date(currentTime) > new Date(endTime);
-        }
 
-        if (type === 'IN') {
-            const lastPermission = await knex('permissions')
-                .where({ user_id: user.id, status: 'accepted' })
-                .orderBy('created_at', 'desc')
-                .first();
-
-            if (lastPermission && isLate(new Date(), lastPermission.end_time)) {
-                await knex('permissions')
-                    .where({ id: lastPermission.id })
-                    .update({ status: 'violation', reason: 'Terlambat kembali ke asrama' });
-
-                return res.status(200).json({
-                    message: `Selamat datang kembali, tapi Anda terlambat! Status dicatat sebagai Violation.`,
-                    status: 'LATE'
-                });
-            }
-        } else if (activePermission) {
+        if (activePermission) {
             await knex('attendance_logs').insert({
                 permission_id: activePermission.id,
                 user_id: user.id,
-                type: type
-            })
+                type: autoType
+            });
 
             return res.status(200).json({
-                message: `Akses diterima. Silakan ${type}, ${user.nama}!`,
-                status: 'AUTHORIZED'
-            })
+                message: `Akses diterima. ${autoType}, ${user.nama}!`,
+                type: autoType
+            });
         } else {
             const [violation] = await knex('permissions').insert({
                 user_id: user.id,
                 status: 'violation',
-                reason: `Mencoba ${type} tanpa izin resmi di sistem.`,
+                reason: `Terdeteksi mencoba melakukan ${autoType} tanpa izin resmi.`,
                 start_time: knex.fn.now(),
                 end_time: knex.fn.now()
-            }).returning('*')
+            }).returning('*');
 
             await knex('attendance_logs').insert({
                 permission_id: violation.id,
                 user_id: user.id,
-                type: type
+                type: autoType
             });
 
             return res.status(403).json({
-                message: `Akses ditolak! Pelanggaran tercatat atas nama ${user.nama}.`,
-                status: 'VIOLATION'
+                message: `Pelanggaran! Anda mencoba ${autoType} tanpa izin.`,
+                reason: 'No active permission'
             });
         }
     } catch (error) {
