@@ -8,20 +8,20 @@ module.exports = {
       port: process.env.DB_PORT,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME
+      database: process.env.DB_NAME,
     },
     migrations: {
-      directory: './database/migrations'
+      directory: './database/migrations',
     },
     seeds: {
-      directory: './database/seeds'
+      directory: './database/seeds',
     },
     pool: {
       acquireTimeoutMillis: 30000,
       idleTimeoutMillis: 10000,
       min: 2,
-      max: 10
-    }
+      max: 10,
+    },
   },
 
   production: {
@@ -31,14 +31,14 @@ module.exports = {
       port: process.env.DB_PORT,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
-      ssl: { rejectUnauthorized: false }
+      database: process.env.DB_NAME,
+      ssl: { rejectUnauthorized: false },
     },
     migrations: {
-      directory: './database/migrations'
+      directory: './database/migrations',
     },
     seeds: {
-      directory: './database/seeds'
-    }
-  }
+      directory: './database/seeds',
+    },
+  },
 };
