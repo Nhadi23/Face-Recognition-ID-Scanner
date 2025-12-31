@@ -8,7 +8,7 @@ from scipy.spatial.distance import cosine
 from utils import *
 
 API_URL = "http://localhost:3000/api/gate/screen"
-COOLDOWN_TIME = 10
+COOLDOWN_TIME = 50  # 5 menit dalam detik : 300
 last_scanned = {}
 
 def send_to_backend(embedding, nim):
@@ -59,19 +59,23 @@ def recognize(img, detector, encoder, encoding_dict, recognition_t=0.2, confiden
             if current_time - last_time > COOLDOWN_TIME:
                 print(f"🚀 Memproses scan untuk NIM: {name}")
 
-                result = send_to_backend(encode, name)                
+                result = send_to_backend(encode, name)
                 # update waktu scan terakhir
                 last_scanned[name] = current_time
-                
+
                 # info dari Backend
                 if result:
                     status_text = f"{result.get('type')} - {result.get('status')}"
-                    cv2.putText(img, status_text, (pt_1[0], pt_2[1] + 25), 
+                    cv2.putText(img, status_text, (pt_1[0], pt_2[1] + 25),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
             else:
                 # masih dalam masa tunggu cooldown
-                cv2.putText(img, "WAIT...", (pt_1[0], pt_1[1] - 30), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+                remaining_time = int(COOLDOWN_TIME - (current_time - last_time))
+                remaining_min = remaining_time // 60
+                remaining_sec = remaining_time % 60
+                cooldown_text = f"COOLDOWN: {remaining_min}m {remaining_sec}s"
+                cv2.putText(img, cooldown_text, (pt_1[0], pt_1[1] - 30),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 2)
 
         # visualisasi 
         color = (0, 255, 0) if name != 'unknown' else (0, 0, 255)
