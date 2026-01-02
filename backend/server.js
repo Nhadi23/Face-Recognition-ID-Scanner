@@ -25,7 +25,7 @@ app.use('/api/permission', permissionController);
 app.use('/api/attendance', AttendanceLogController);
 app.use('/api/gate', GateController);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get('/api/', (req, res) => {
 	res.send('Backend Server is running.');
 });

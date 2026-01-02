@@ -1,9 +1,5 @@
 version: '3.8'
 
-# Alternative docker-compose.yml with embedded PostgreSQL database
-# Use this for development/testing or if you don't want to use Coolify database service
-# Note: Coolify Database Service is recommended for production
-
 services:
   # PostgreSQL Database
   postgres:
@@ -12,23 +8,25 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME:-face_recognition}
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - face-recognition-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-face_recognition}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+    networks:
+      - face-recognition-network
 
   # Backend API
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.with-db
     container_name: face-recognition-backend
     restart: unless-stopped
     depends_on:
@@ -39,27 +37,22 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME:-face_recognition}
       DB_CLIENT: pg
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      FRONTEND_URL: ${FRONTEND_URL:-https://facerecognition.nexawebs.com}
+      FRONTEND_URL: https://facerecognition.nexawebs.com
     networks:
       - face-recognition-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`api.facerecognition.nexawebs.com`)"
-      - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.tls.certresolver=myresolver"
 
-  # Frontend
+  # Frontend (Nginx + React)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-https://api.facerecognition.nexawebs.com}
+        VITE_API_URL: https://facerecognition.nexawebs.com/api
     container_name: face-recognition-frontend
     restart: unless-stopped
     depends_on:
@@ -68,9 +61,11 @@ services:
       - face-recognition-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`facerecognition.nexawebs.com`)"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.routers.facerecognition.entrypoints=websecure"
+      - "traefik.http.routers.facerecognition.rule=Host(`facerecognition.nexawebs.com`)"
+      - "traefik.http.routers.facerecognition.tls.certresolver=myresolver"
+      - "traefik.http.routers.facerecognition.tls=true"
+      - "traefik.http.services.facerecognition.loadbalancer.server.port=80"
 
 volumes:
   postgres_data:
