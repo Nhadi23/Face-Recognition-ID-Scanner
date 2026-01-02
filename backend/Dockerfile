@@ -15,5 +15,5 @@ COPY . .
 # Expose port
 EXPOSE 3000
 
-# Run migrations and start server
-CMD ["sh", "-c", "npx knex migrate:latest && npm start"]
+# Start server (migrations will be run manually via Coolify or separately)
+CMD ["npm", "start"]
