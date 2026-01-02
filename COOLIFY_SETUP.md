@@ -43,7 +43,7 @@ DB_CLIENT=pg
 JWT_SECRET=CHANGE_THIS_SECURE_JWT_SECRET
 JWT_REFRESH_SECRET=CHANGE_THIS_SECURE_REFRESH_SECRET
 
-VITE_API_URL=https://facerecognition.nexawebs.com/api
+VITE_API_URL=https://facerecognition.nexawebs.com
 ENVIRONMENT=production
 FRONTEND_URL=https://facerecognition.nexawebs.com
 ```
@@ -236,7 +236,7 @@ Frontend Container (Nginx + React) :80
 ### Application Configuration
 - `ENVIRONMENT` - Environment (production/development)
 - `FRONTEND_URL` - Frontend URL for CORS (https://facerecognition.nexawebs.com)
-- `VITE_API_URL` - Backend API URL for frontend (https://facerecognition.nexawebs.com/api)
+- `VITE_API_URL` - Backend API base URL for frontend (https://facerecognition.nexawebs.com) - **Note**: Don't include `/api` as frontend code already adds it
 
 ## Resource Requirements
 

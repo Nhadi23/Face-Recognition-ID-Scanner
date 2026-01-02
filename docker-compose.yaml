@@ -52,7 +52,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: https://facerecognition.nexawebs.com/api
+        VITE_API_URL: https://facerecognition.nexawebs.com
     container_name: face-recognition-frontend
     restart: unless-stopped
     depends_on:
