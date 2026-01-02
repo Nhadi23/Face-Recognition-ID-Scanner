@@ -87,17 +87,7 @@ Once deployed:
 
 ⚠️ **IMPORTANT**: Change the default admin password immediately!
 
-### 8. Seed Database (First Time Only)
-
-After first deployment, run the database seeds:
-
-```bash
-# Get the backend container name
-docker ps | grep backend
-
-# Seed the database
-docker exec <backend-container-name> npx knex seed:run
-```
+**Note**: Database seeds run automatically during deployment, creating the admin user and student accounts.
 
 ## Troubleshooting Quick Fixes
 
@@ -117,13 +107,27 @@ docker exec <backend-container-name> npx knex seed:run
 - Wait for database service to fully start (may take 1-2 minutes)
 - Check database health status: `docker inspect <db-container> --format='{{.State.Health.Status}}'`
 - Verify DB_HOST is set to `postgres` (service name)
-- Check database logs in Coolify
+- Check backend logs for database errors
+- Verify all environment variables are set correctly in Coolify
+- **IMPORTANT**: Make sure `ENVIRONMENT=production` is set in backend environment variables
 
 ### API returns 404 or 502
 - Verify backend container is running
 - Check backend can reach database: `docker exec <backend-container> ping postgres`
 - Review nginx logs: `docker logs <frontend-container>`
 - Ensure frontend's nginx.conf has `/api` proxy configuration
+
+### Can't login / Admin user doesn't exist
+- Check if seeds have run: `docker logs <backend-container> | grep "Seed berhasil"`
+- If seeds haven't run, manually execute:
+  ```bash
+  docker exec <backend-container-name> npx knex seed:run
+  ```
+- Verify admin user exists in database
+- Default credentials:
+  - NIM: `admin01`
+  - Password: `admin123`
+- **IMPORTANT**: Change the default admin password immediately after first login!
 
 ### Need to re-deploy?
 - Click **"Deploy"** → **"Redeploy"**

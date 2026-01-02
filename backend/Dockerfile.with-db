@@ -17,5 +17,5 @@ COPY . .
 # Expose port
 EXPOSE 3000
 
-# Run migrations and start server (only use with embedded database)
-CMD ["sh", "-c", "npx knex migrate:latest && npm start"]
+# Run migrations, seeds, and start server
+CMD ["sh", "-c", "npx knex migrate:latest && npx knex seed:run && npm start"]

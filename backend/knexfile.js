@@ -32,13 +32,18 @@ module.exports = {
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      ssl: { rejectUnauthorized: false },
     },
     migrations: {
       directory: './database/migrations',
     },
     seeds: {
       directory: './database/seeds',
+    },
+    pool: {
+      acquireTimeoutMillis: 30000,
+      idleTimeoutMillis: 10000,
+      min: 2,
+      max: 10,
     },
   },
 };
