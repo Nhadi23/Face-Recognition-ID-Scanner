@@ -274,3 +274,4 @@ Frontend Container (Nginx + React) :80
 - RAM: 1-2 GB minimum
 - CPU: 1-2 cores
 - Storage: 5-10 GB for database
+

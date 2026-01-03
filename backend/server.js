@@ -9,11 +9,7 @@ const UserController = require('./controllers/UserController');
 const permissionController = require('./controllers/PermissionController');
 const AttendanceLogController = require('./controllers/AttendanceLogController');
 const GateController = require('./controllers/GateController');
-const knex = require('knex');
-const knexConfig = require('./knexfile.js');
-
-// Initialize knex
-const db = knex(knexConfig[process.env.NODE_ENV || 'development']);
+const db = require('./config/database');
 
 // Middleware
 app.use(express.json());
@@ -57,6 +53,15 @@ app.get('/health', async (req, res) => {
 });
 
 // Run server
-app.listen(port, () => {
+const server = app.listen(port, () => {
 	console.log(`Server is listening on http://localhost:${port}`);
+});
+
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+	console.log('SIGTERM received, shutting down gracefully...');
+	server.close(() => {
+		console.log('Server closed');
+		db.destroy();
+	});
 });
