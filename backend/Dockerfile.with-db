@@ -5,8 +5,8 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Install wget for health check
-RUN apk add --no-cache wget
+# Install wget for health check and postgres client for connection testing
+RUN apk add --no-cache wget postgresql-client
 
 # Copy package files
 COPY package*.json ./
@@ -20,5 +20,5 @@ COPY . .
 # Expose port
 EXPOSE 3000
 
-# Run migrations, seeds, and start server
-CMD ["sh", "-c", "npx knex migrate:latest && npx knex seed:run && npm start"]
+# Wait for database, run migrations, seeds (with error tolerance), and start server
+CMD ["sh", "-c", "echo 'Waiting for database...' && until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER; do sleep 2; done && echo 'Database is ready!' && npx knex migrate:latest && echo 'Migrations completed!' || { echo 'Migrations failed!'; exit 1; } && npx knex seed:run && echo 'Seeds completed!' || echo 'Seeds failed (non-critical), continuing...' && echo 'Starting backend server...' && npm start"]
