@@ -9,6 +9,11 @@ const UserController = require('./controllers/UserController');
 const permissionController = require('./controllers/PermissionController');
 const AttendanceLogController = require('./controllers/AttendanceLogController');
 const GateController = require('./controllers/GateController');
+const knex = require('knex');
+const knexConfig = require('./knexfile.js');
+
+// Initialize knex
+const db = knex(knexConfig[process.env.NODE_ENV || 'development']);
 
 // Middleware
 app.use(express.json());
@@ -28,6 +33,27 @@ app.use('/api/gate', GateController);
 app.use('/api/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get('/api/', (req, res) => {
 	res.send('Backend Server is running.');
+});
+
+// Health check endpoint with database connectivity
+app.get('/health', async (req, res) => {
+	try {
+		// Check database connection
+		await db.raw('SELECT 1');
+		res.status(200).json({
+			status: 'healthy',
+			database: 'connected',
+			timestamp: new Date().toISOString()
+		});
+	} catch (error) {
+		console.error('Health check failed:', error);
+		res.status(503).json({
+			status: 'unhealthy',
+			database: 'disconnected',
+			error: error.message,
+			timestamp: new Date().toISOString()
+		});
+	}
 });
 
 // Run server

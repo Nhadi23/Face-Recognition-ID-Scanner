@@ -21,4 +21,19 @@ COPY . .
 EXPOSE 3000
 
 # Wait for database, run migrations, seeds (with error tolerance), and start server
-CMD ["sh", "-c", "echo 'Waiting for database...' && until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER; do sleep 2; done && echo 'Database is ready!' && npx knex migrate:latest && echo 'Migrations completed!' || { echo 'Migrations failed!'; exit 1; } && npx knex seed:run && echo 'Seeds completed!' || echo 'Seeds failed (non-critical), continuing...' && echo 'Starting backend server...' && npm start"]
+CMD ["sh", "-c", "set -e && \
+echo 'Environment: NODE_ENV=${NODE_ENV}' && \
+echo 'Waiting for database...' && \
+until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME; do \
+  echo 'Postgres is unavailable - sleeping'; \
+  sleep 2; \
+done && \
+echo 'Database is ready!' && \
+echo 'Running migrations...' && \
+npx knex migrate:latest && \
+echo 'Migrations completed!' && \
+echo 'Running seeds...' && \
+npx knex seed:run && \
+echo 'Seeds completed!' && \
+echo 'Starting backend server...' && \
+node server.js"]
