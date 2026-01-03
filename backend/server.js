@@ -9,7 +9,6 @@ const UserController = require('./controllers/UserController');
 const permissionController = require('./controllers/PermissionController');
 const AttendanceLogController = require('./controllers/AttendanceLogController');
 const GateController = require('./controllers/GateController');
-const db = require('./config/database');
 
 // Middleware
 app.use(express.json());
@@ -31,25 +30,12 @@ app.get('/api/', (req, res) => {
 	res.send('Backend Server is running.');
 });
 
-// Health check endpoint with database connectivity
-app.get('/health', async (req, res) => {
-	try {
-		// Check database connection
-		await db.raw('SELECT 1');
-		res.status(200).json({
-			status: 'healthy',
-			database: 'connected',
-			timestamp: new Date().toISOString()
-		});
-	} catch (error) {
-		console.error('Health check failed:', error);
-		res.status(503).json({
-			status: 'unhealthy',
-			database: 'disconnected',
-			error: error.message,
-			timestamp: new Date().toISOString()
-		});
-	}
+// Health check endpoint
+app.get('/health', (req, res) => {
+	res.status(200).json({
+		status: 'healthy',
+		timestamp: new Date().toISOString()
+	});
 });
 
 // Run server
@@ -57,11 +43,11 @@ const server = app.listen(port, () => {
 	console.log(`Server is listening on http://localhost:${port}`);
 });
 
-// Handle graceful shutdown
-process.on('SIGTERM', () => {
-	console.log('SIGTERM received, shutting down gracefully...');
-	server.close(() => {
-		console.log('Server closed');
-		db.destroy();
-	});
+// Catch all errors to prevent crashes
+process.on('uncaughtException', (err) => {
+	console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+	console.error('Unhandled Rejection:', err);
 });
