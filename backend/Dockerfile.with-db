@@ -1,12 +1,11 @@
-# Backend Dockerfile - Alternative version with auto-migration
-# Use this with docker-compose-with-db.yml for embedded PostgreSQL
+# Backend Dockerfile - Simplified for campus project submission
 
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Install wget for health check and postgres client for connection testing
-RUN apk add --no-cache wget postgresql-client
+# Install postgres client
+RUN apk add --no-cache postgresql-client
 
 # Copy package files
 COPY package*.json ./
@@ -17,41 +16,18 @@ RUN npm ci --only=production
 # Copy application files
 COPY . .
 
-# Create startup script
-RUN echo '#!/bin/sh\n\
-set -e\n\
-echo "========================================"\n\
-echo "Starting Backend Container"\n\
-echo "========================================"\n\
-echo "Environment:"\n\
-echo "  NODE_ENV=${NODE_ENV}"\n\
-echo "  DB_HOST=${DB_HOST}"\n\
-echo "  DB_PORT=${DB_PORT}"\n\
-echo "  DB_USER=${DB_USER}"\n\
-echo "  DB_NAME=${DB_NAME}"\n\
-echo "========================================"\n\
-echo "Waiting for database..."\n\
-until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME 2>/dev/null; do\n\
-  echo "Postgres is unavailable - sleeping"\n\
-  sleep 2\n\
-done\n\
-echo "Database is ready!"\n\
-echo "Running migrations..."\n\
-npx knex migrate:latest || {\n\
-  echo "ERROR: Migrations failed!"\n\
-  exit 1\n\
-}\n\
-echo "Migrations completed!"\n\
-echo "Running seeds..."\n\
-npx knex seed:run || echo "WARNING: Seeds failed (non-critical)"\n\
-echo "========================================"\n\
-echo "Starting backend server..."\n\
-echo "========================================"\n\
-exec node server.js\n\
-' > /start.sh && chmod +x /start.sh
-
 # Expose port
 EXPOSE 3000
 
-# Use startup script
-CMD ["/start.sh"]
+# Simple startup script
+CMD sh -c 'echo "Waiting for database..." && \
+until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER > /dev/null 2>&1; do sleep 2; done && \
+echo "Database ready!" && \
+echo "Running migrations..." && \
+npx knex migrate:latest && \
+echo "Migrations done!" && \
+echo "Running seeds..." && \
+npx knex seed:run && \
+echo "Seeds done!" && \
+echo "Starting server..." && \
+node server.js'
