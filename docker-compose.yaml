@@ -20,7 +20,9 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - face-recognition-network
+      face-recognition-network:
+        aliases:
+          - postgres
 
   # Backend API
   backend:
@@ -44,7 +46,9 @@ services:
       FRONTEND_URL: https://facerecognition.nexawebs.com
       NODE_ENV: production
     networks:
-      - face-recognition-network
+      face-recognition-network:
+        aliases:
+          - backend
 
   # Frontend (Nginx + React)
   frontend:
@@ -58,7 +62,9 @@ services:
     depends_on:
       - backend
     networks:
-      - face-recognition-network
+      face-recognition-network:
+        aliases:
+          - frontend
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.facerecognition.entrypoints=websecure"
