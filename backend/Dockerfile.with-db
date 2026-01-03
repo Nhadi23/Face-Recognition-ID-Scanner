@@ -19,15 +19,13 @@ COPY . .
 # Expose port
 EXPOSE 3000
 
-# Simple startup script
+# Simple startup script - don't exit on errors
 CMD sh -c 'echo "Waiting for database..." && \
 until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER > /dev/null 2>&1; do sleep 2; done && \
 echo "Database ready!" && \
 echo "Running migrations..." && \
-npx knex migrate:latest && \
-echo "Migrations done!" && \
+npx knex migrate:latest || echo "Migrations failed, continuing..." && \
 echo "Running seeds..." && \
-npx knex seed:run && \
-echo "Seeds done!" && \
+npx knex seed:run || echo "Seeds failed, continuing..." && \
 echo "Starting server..." && \
 node server.js'
